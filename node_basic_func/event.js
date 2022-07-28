@@ -1,23 +1,23 @@
 
-process.on('evt1',function(){
-    console.log('evt1 이벤트 발생함.');
+process.on('exit',function(){
+    console.log('exit 이벤트 발생함.');
 });
 
-setTimeout(evt1(),1000);
-
-function evt1() {
-    console.log('evt1 발생!!!!!');
+setTimeout(function (){
+    console.log('exit 발생!!!!!');
     process.exit();
-};
+});
+
+
 
 process.on('evt2', function(num){
     console.log('evt2: %d',num);
 
 });
 
-setTimeout(function(){
+setTimeout(function (){
     console.log('evt2 발생');
-    process.emit(evt2,2)
+    process.emit('evt2',2)
 });
 
 
