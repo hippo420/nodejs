@@ -72,15 +72,18 @@ fs.exists(outname,function(exists){
     console.log('파일 복사 => ['+inname+'] -> ['+outname+']');
 });
 
+let logger = require('./log');
 console.log('############http_Module##############');
 const fs_http = require('fs');
 const http = require('http');
 const rec_cnt = "웹서버로 요청받은 내용";
 let server = http.createServer(function(req,res){
-    let instream = fs_http.createReadStream('./resource/output2.txt');
+    let instream = fs_http.createReadStream('.\\resource\\output2.txt');
     instream.pipe(res);
 });
-server.listen(7001,'127.0.0.1');
+server.listen(7001,'localhost',function(){
+    logger.info('server 7001 port running...');
+});
 
 
 //디렉토리 생성

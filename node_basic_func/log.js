@@ -10,12 +10,11 @@ function timeStamp(){
     return moment().format('YYYY-MM-DD HH:mm:ss.SSS ZZ');
 };
 
-let logger = new (winston.logger)({
+let logger = new winston.createLogger({
     transports:[
         new (winstonDaily)({
             name : 'info-file',
-            filename: './log/server',
-            datePattern: 'yyyy-MM-dd.log',
+            filename: './log/server_%DATE%.log',
             colorize: false,
             maxsize:50000000,
             maxFiles:1000,
@@ -36,8 +35,7 @@ let logger = new (winston.logger)({
     exceptionHandlers:[
         new (winstonDaily)({
             name : 'exception-file',
-            filename: './log/exception',
-            datePattern: 'yyyy-MM-dd.log',
+            filename: './log/exception_%DATE%.log',
             colorize: false,
             maxsize:50000000,
             maxFiles:1000,
@@ -56,3 +54,10 @@ let logger = new (winston.logger)({
         }),
     ]
 });
+
+logger.stream={
+    write:function(message,encoding){
+        logger.info(message);
+    },
+};
+module.exports=logger;
