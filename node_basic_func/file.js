@@ -1,42 +1,42 @@
 const fs = require('fs');
-const PATH =".\\resource\\FileTest.txt";
+const PATH ="./resource/FileTest.txt";
 const writePath = "resource";
 
-// let data =fs.readFileSync(PATH,'utf8');
-// let data1 = fs.readFile(PATH,'utf8',function(err,data){
-//     console.log('비동기[CallBack]=>'+data)
-// });
+let data =fs.readFileSync(PATH,'utf8');
+let data1 = fs.readFile(PATH,'utf8',function(err,data){
+    console.log('비동기[CallBack]=>'+data)
+});
 
-// console.log('비동기=>'+data1);
-// console.log('동기=>'+data);
+console.log('비동기=>'+data1);
+console.log('동기=>'+data);
 
-// fs.writeFile(writePath+'writeASync.txt','ASync Hello Node!',function(err){
-//     if(err){
-//         console.log('Error: '+err);
-//     }
-//     console.log('[비동기]파일 쓰기 완료');
-// });
+fs.writeFile(writePath+'writeASync.txt','ASync Hello Node!',function(err){
+    if(err){
+        console.log('Error: '+err);
+    }
+    console.log('[비동기]파일 쓰기 완료');
+});
 
-// fs.writeFileSync(writePath+'writeExamSync.txt','Sync Hello Node!');
-//     console.log('[동기]파일 쓰기 완료');
+fs.writeFileSync(writePath+'writeExamSync.txt','Sync Hello Node!');
+    console.log('[동기]파일 쓰기 완료');
 
 
-// fs.open(PATH,'w',function(err,fd){
-//     if(err){
-//         console.log('Error : '+err);
-//     }
+fs.open(PATH,'w',function(err,fd){
+    if(err){
+        console.log('Error : '+err);
+    }
 
-//     let filebuff = new Buffer('새로 작성된 내용');
-//     fs.write(fd,filebuff,0,filebuff.length,null,function(err,written, buffer){
-//         if(err){
-//             console.log(err,written,buffer);
-//         }
+    let filebuff = new Buffer('새로 작성된 내용');
+    fs.write(fd,filebuff,0,filebuff.length,null,function(err,written, buffer){
+        if(err){
+            console.log(err,written,buffer);
+        }
 
-//         fs.close(fd,function(){
-//             console.log('파일 쓰기 완료!!!')
-//         });
-//     });
-// });
+        fs.close(fd,function(){
+            console.log('파일 쓰기 완료!!!')
+        });
+    });
+});
 
 //buffer
 let str ="버퍼로 쓴 파일";
@@ -55,8 +55,8 @@ buffer.copy(buffer2);
 console.log('버터 복사 => buffer: '+buffer.toString()+', buffer2[copy]: '+buffer2.toString());
 
 //Stream FIle
-let inname = '.\\resource\\output1.txt'
-let outname = '.\\resource\\output2.txt'
+let inname = './resource/output1.txt'
+let outname = './resource/output2.txt'
 fs.exists(outname,function(exists){
     if(exists){
         fs.unlink(outname,function(err){
@@ -70,4 +70,30 @@ fs.exists(outname,function(exists){
 
     infile.pipe(outfile);
     console.log('파일 복사 => ['+inname+'] -> ['+outname+']');
+});
+
+console.log('############http_Module##############');
+const fs_http = require('fs');
+const http = require('http');
+const rec_cnt = "웹서버로 요청받은 내용";
+let server = http.createServer(function(req,res){
+    let instream = fs_http.createReadStream('./resource/output2.txt');
+    instream.pipe(res);
+});
+server.listen(7001,'127.0.0.1');
+
+
+//디렉토리 생성
+console.log('############make Directoty using fs_module##############');
+const fs_dir = require('fs');
+
+fs_dir.mkdir('./newdir',0666,function(err){
+    if(err) throw err;
+    console.log('새 디렉토리 생성!');
+ 
+});
+
+fs_dir.rmdir('./newdir',function(err){
+        if(err) throw err;
+        console.log('생성된 디렉토리 삭제!!');
 });
