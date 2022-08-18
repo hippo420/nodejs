@@ -7,8 +7,6 @@ const static = require('serve-static');
 const expressErrorHandler = require('express-error-handler');
 const cookieParser = require('cookie-parser');
 const expressSession = require('express-session');
-const { runInNewContext } = require('vm');
-const session = require('express-session');
 
 var app1 = express();
 var router = express.Router();
@@ -35,20 +33,19 @@ router.route('/action/login').post(function(req,res){
 
     if(req.session.user){
         console.log('이미 로그인되어있습니다.');
-        res.redirect('/public/mypage.html');
+        res.redirect('/mypage.html');
     }else{
         //세션저장
         req.session.user={
             id: pId,
             name : '개밥자',
-            job : 'developer',
             authorized: true
         };
 
         res.writeHead('200',{'Content-Type':'text/html;charset=utf8'});
         res.write('<h1>Express 서버기동중......Router-response.....</h1>');
         res.write('<div><p>id :'+pId+'</p></div>');
-        res.write('<div><p>password :'+PPassword+'</p></div>');
+        res.write('<div><p>password :'+pPassword+'</p></div>');
         res.write("<br><br><a href='/action/mypage'>마이페이지로 이동</a>");
         res.end();
     }
@@ -63,11 +60,11 @@ router.route('/action/logout').get(function(req,res){
             if(err) throw err;
 
             console.log('세션제거....');
-            res.redirect('/public/login2.html');
+            res.redirect('/login2.html');
         });
     }else{
         console.log('로그인 필요!!');
-        res.redirect('/public/login2.html');
+        res.redirect('/login2.html');
     }
 });
 
@@ -95,9 +92,9 @@ router.route('/action/mypage').get(function(req,res){
 
     
     if(req.session.user){
-        res.redirect('/public/mypage.html');
+        res.redirect('/mypage.html');
     }else{
-        res.redirect('public/login2.html');
+        res.redirect('/login2.html');
     }
 });
 
