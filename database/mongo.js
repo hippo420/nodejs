@@ -62,25 +62,9 @@ var addUser = function(database,id,password,name,callback){
     console.log('addUser ====> id: %s, password : %s, name: %s',id,password,name);
 
     let users = database.collection('users');
-    let checkUser=false;
+    var checkUser="false";
 
-    users.find({"id":id}).toArray(function(err,docs){
-        if(err){
-            callback(err,null);
-            return;
-        }
-        if(docs.length>0){
-            console.log('같은 아이디 [%s] 찾음!!!',id);
-            checkUser=true;
-        }else{
-            console.log('같은 아이디정보 업음');
-            callback(err,null);
-        }
-    });
-
-    if(checkUser) return;
-    
-    users.insertMany([{"id":id,"password":password,"name": name}],function(err,result){
+    users.insertMany([{"id":id, "name": name, "password":password}],function(err,result){
         if(err){
             callback(err,null);
             return;
@@ -93,7 +77,7 @@ var addUser = function(database,id,password,name,callback){
             console.log('사용자 추가 안됨.');
         }
         callback(err,result);
-    });
+    }); 
 
 }
 var router = express.Router();

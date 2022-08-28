@@ -60,7 +60,7 @@ router.route('/action/logout').get(function(req,res){
             if(err) throw err;
 
             console.log('세션제거....');
-            res.redirect('/login2.html');
+            res.redirect('login2.html');
         });
     }else{
         console.log('로그인 필요!!');

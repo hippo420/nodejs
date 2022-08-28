@@ -36,3 +36,5 @@
 module.exports =  function() {
     return{id:'iPhone14', price:'1,000,000'};
 };
+
+exports={id: 'iPhone14', price: '500,000'};
