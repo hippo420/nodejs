@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
 
-var database;
+let database;
 
-var userSchema;
-var userModel;
+let userSchema;
+let userModel;
 
 
 
@@ -24,12 +24,25 @@ function connectDB(){
         console.log('DB연결 연결 ==> '+databaseUrl);
 
         userSchema = mongoose.Schema({
-            id : String,
-            name : String,
-            password : String
+                    id : {type: String, required :true, unique : true},
+                    name : {type: String, index : 'hashed'},
+                    password : {type: String, unique : true}
+                });
+
+        //method 
+        //static(name, fn) => 모델 객체에서 사용할 수 있는 함수를 등록, 함수의 이름과 함수 객체를 파라미터로 
+        //method(name, fn) => 모델 인스턴스 객체에서 사용할 수 있는 함수를 등록, 함수의 이름과 함수 객체를 파라미터로
+        console.log('userSchema static정의함.');
+        userSchema.static('findById', function(id, callback){
+            return this.find({id:id},callback);
         });
 
-        userModel = mongoose.Model("users", userSchema);
+        userSchema.static('findAll',function(callback){
+        return this.find({},callback);
+        });
+
+        console.log('userModel 정의함.');
+        userModel = mongoose.model("users2",userSchema);
 
         database.on('disconnected',function(){
                 console.log('DB연결이 중단.....5초후 재연결');
@@ -38,9 +51,9 @@ function connectDB(){
     });
 }
 
-var authUser = function(database, id,password,callback){
+let authUser = function(database, id,password,callback){
     console.log('몽구스...authUser');
-    userModel.find({"id":id, "password": password},function (err,results){
+    userModel.findById(id,function (err,results){
         if(err){
             callback(err,null);
             return;
@@ -59,7 +72,7 @@ var authUser = function(database, id,password,callback){
 };
 
 
-var addUser = function(database, id, password,name, callback){
+let addUser = function(database, id, password,name, callback){
     console.log('몽구스...addUser');
     let user = new userModel({"id":id,"password": password,"name": name});
 
@@ -80,18 +93,5 @@ var addUser = function(database, id, password,name, callback){
 //     password : {type: String, unique : true}
 // });
 
-//method 
-//static(name, fn) => 모델 객체에서 사용할 수 있는 함수를 등록, 함수의 이름과 함수 객체를 파라미터로 
-//method(name, fn) => 모델 인스턴스 객체에서 사용할 수 있는 함수를 등록, 함수의 이름과 함수 객체를 파라미터로
-console.log('userSchema static정의함.');
-userSchema.static('findById', function(id, callback){
-    return this.find({id:id},callback);
-});
+var router = express.Router();
 
-userSchema.static('findAll',function(callback){
-    return this.find({},callback);
-});
-
-
-console.log('userModel 정의함.');
-userModel = mongoose.model("users2",userSchema);
