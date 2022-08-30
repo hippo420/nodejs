@@ -49,7 +49,7 @@ function connectDB(){
             password : String
         });
 
-        UserModel = mongoose.Model("users", UserSchema);
+        UserModel = mongoose.model("users", UserSchema);
 
         database.on('disconnected',function(){
                 console.log('DB연결이 중단.....5초후 재연결');
@@ -93,6 +93,20 @@ var addUser = function(database, id, password,name, callback){
     });
 };
 
+var updateUser = function(database, id,name, callback){
+    console.log('몽구스...updateUser');
+
+    UserModel.where({id:id}).updateOne({name :name},function(err,results){
+        if(err){
+            callback(err,null);
+            console.log('update.....Error =======>'+err);
+        }
+        
+    });
+    callback(null, true);
+    console.log('사용자 수정완료');
+};
+
 var router = express.Router();
 
 router.route('/action/adduser').post(function(req,res){
@@ -104,14 +118,15 @@ router.route('/action/adduser').post(function(req,res){
 
     if(database){
         addUser(database,pId,pPassword,pName,function(err,result){
-            console.log(pId+'====> 사용자추가');
+
+            console.log(pId+'====> 수정');
             if(err) throw err;
-            console.log('err:'+ err);
+
             if(result && result.insertedCount>0){
                 console.dir(result);
 
                 res.writeHead('200',{'Content-Type':'text/html;charset=utf8'});
-                res.write('<h1> 사용자 추가 성공!!!! </h1>');
+                res.write('<h1> 사용자 수정 성공!!!! </h1>');
                 res.write('<div><p>사용자 추가 성공했습니다. </p></div>');
                 res.write("<div><p><a href = '/public/login.html'>로그인 하기</a></p></div>");
                 res.end();
@@ -151,6 +166,7 @@ router.route('/action/login').post(function(req,res){
                 res.write('<div><p>id :'+pId+'</p></div>');
                 res.write('<div><p>password :'+pPassword+'</p></div>');
                 res.write("<div><p><a href = '/action/adduser'>사용자추가 하기</a></p></div>");
+                res.write("<div><p><a href = '/action/update'>수정하기</a></p></div>");
                 res.write("<br><br><a href='/action/mypage'>마이페이지로 이동</a>");
                 res.end();
             }else{
@@ -180,6 +196,41 @@ router.route('/action/login').post(function(req,res){
         };
 
     }
+});
+
+
+router.route('/action/update').post(function(req,res){
+    console.log('update....');
+
+    var pId = req.body.id || req.query.id;
+    var name = req.body.name || req.query.name;
+
+    //수정구현
+    if(database){
+        updateUser(database,pId,name,function(err,flag){
+            if(err) throw err;
+            console.log(pId+'----err--- !!!'+err);
+            console.log("flag: "+flag);
+            if(flag){
+                res.writeHead('200',{'Content-Type':'text/html;charset=utf8'});
+                res.write('<h1> 수정 성공!!!! </h1>');
+                res.write('<div><p>id :'+pId+'</p></div>');
+                res.write('<div><p>name :'+name+'</p></div>');
+                res.end();
+            }else{
+                res.writeHead('200',{'Content-Type':'text/html;charset=utf8'});
+                res.write('<h1>  수정 실패!!!! </h1>');
+                res.write('<div><p>수정에 실패했습니다. </p></div>');
+                res.end();
+            }
+        });
+    }else{
+        res.writeHead('200',{'Content-Type':'text/html;charset=utf8'});
+        res.write('<h1> DB연결 실패!!!! </h1>');
+        res.write('<div><p>DB에 연결하지 못했습니다.</p></div>');
+        res.end();
+    }
+
 });
 
 router.route('/action/logout').get(function(req,res){

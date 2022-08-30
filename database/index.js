@@ -1,5 +1,15 @@
 const mongoose = require('mongoose');
+const express= require('express');
+const http= require('http');
+const path= require('path');
+const bodyParser = require('body-parser');
+const static = require('serve-static');
+const rrorHandler = require('errorhandler');
+const expressErrorHandler = require('express-error-handler');
+const cookieParser = require('cookie-parser');
+const expressSession = require('express-session');
 
+var app = express();
 let database;
 
 let userSchema;
@@ -94,4 +104,41 @@ let addUser = function(database, id, password,name, callback){
 // });
 
 var router = express.Router();
+
+router.route('action/listuser').post(function(req,res){
+    console.log('listuser 호출');
+    
+    if(database){
+        userModel.findAll(function(err,results){
+            if(err){
+                console.log('조회중 오류발생..');
+
+                res.writeHead('200',{'Content-Type':'text/html;charset=utf8'});
+                res.write('<h2>사용지 리스트 조회중 오류발생.....</h2>');
+                res.write('<p>'+err.stack+'</p>');
+                res.end();
+                return;
+            }
+            if(results){
+                console.dir(results);
+                res.writeHead('200',{'Content-Type':'text/html;charset=utf8'});
+                res.write('<h2>사용지 리스트</h2>');
+                res.write('<div><ul>');
+
+                for(let i=0;i<results.length;i++){
+                    let curId = results[i]._doc_id;
+                    let curName = results[i]._dov_name;
+                    res.write('    <li>#'+i+' : '+ curId+', '+curName+'</li>');
+                }
+                res.write('</ul></div>');
+                res.end();
+
+            }else{
+                res.writeHead('200',{'Content-Type':'text/html;charset=utf8'});
+                res.write('<h2>데이터베이스 연결 실패</h2>');
+                res.end();
+            }
+        });
+    }
+});
 
