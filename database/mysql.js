@@ -49,23 +49,26 @@ var authUser = function(id,password,callback){
         }
         console.log('데이터베이스 연결 스레드 아이디: '+conn.threadId);
 
-        var columns = ['id', 'name'];
-        var tablename='users';
+        let columns = ['id', 'name'];
+        console.log(columns);
+        let tablename = 'users';
 
-        var exec = conn.query("select ?? form ?? where id = ? and password = ? ",[columns, tablename, id ,password],function(err,rows){
-            conn.release();
-            console.log('실행 SQL: '+exec.sql);
+        var exec = conn.query( "select ?? from ?? where id = ? and password = ? "
+                             , [columns,tablename, id ,password]
+                             , function(err,rows){
+                                    conn.release();
+                                    console.log('실행 SQL: '+exec.sql);
 
-            console.dir(rows);
-            if(rows.length>0){
-                console.log('일치 아이디[%s] 찾음!!',id);
-                callback(null,rows);
-            }else{
-                console.log('일치 아이디 없음');
-                callback(null,null);
-            }
+                                    console.dir(rows);
+                                    if(rows.length>0){
+                                        console.log('일치 아이디[%s] 찾음!!',id);
+                                        callback(null,rows);
+                                    }else{
+                                        console.log('일치 아이디 없음');
+                                        callback(null,null);
+                                    }
+                                });
         });
-    });
 };
 
 

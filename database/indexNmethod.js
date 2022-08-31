@@ -1,19 +1,38 @@
-const mongoose = require('mongoose');
+//인덱스
+// UserSchema = mongoose.Schema({
+//     id : {type: String, required :true, unique : true},
+//     name : {type: String, index : 'hashed'},
+//     password : {type: String, unique : true}
+// });
+
+
+
 const express= require('express');
 const http= require('http');
 const path= require('path');
 const bodyParser = require('body-parser');
 const static = require('serve-static');
-const rrorHandler = require('errorhandler');
+const errorHandler = require('errorhandler');
 const expressErrorHandler = require('express-error-handler');
 const cookieParser = require('cookie-parser');
 const expressSession = require('express-session');
+const mongoose = require('mongoose');
 
 var app = express();
-let database;
+app.set('port',process.env.PORT || 3000);
+app.use(static(path.join(__dirname,'public')));
+app.use(bodyParser.urlencoded({extended: false}));
+app.use(bodyParser.json());
+app.use(cookieParser());
+app.use(expressSession({
+    secret :'key',
+    resave : true,
+    saveUninitialized: true
+}));
 
-let userSchema;
-let userModel;
+var database;
+var UserSchema;
+var UserModel;
 
 
 
@@ -33,26 +52,29 @@ function connectDB(){
     database.on('open', function(){
         console.log('DB연결 연결 ==> '+databaseUrl);
 
-        userSchema = mongoose.Schema({
+        UserSchema = mongoose.Schema({
                     id : {type: String, required :true, unique : true},
+                    password : {type: String, unique : true},
                     name : {type: String, index : 'hashed'},
-                    password : {type: String, unique : true}
+                    created_ymd : {type : Date, index :{unique:false}, 'default':Date.now},
+                    updated_ymd : {type : Date, index :{unique:false}, 'default':Date.now},
+                    
                 });
 
         //method 
         //static(name, fn) => 모델 객체에서 사용할 수 있는 함수를 등록, 함수의 이름과 함수 객체를 파라미터로 
         //method(name, fn) => 모델 인스턴스 객체에서 사용할 수 있는 함수를 등록, 함수의 이름과 함수 객체를 파라미터로
-        console.log('userSchema static정의함.');
-        userSchema.static('findById', function(id, callback){
+        console.log('UserSchema static정의함.');
+        UserSchema.static('findById', function(id, callback){
             return this.find({id:id},callback);
         });
 
-        userSchema.static('findAll',function(callback){
-        return this.find({},callback);
+        UserSchema.static('findAll',function(callback){
+            return this.find({},callback);
         });
 
-        console.log('userModel 정의함.');
-        userModel = mongoose.model("users2",userSchema);
+        console.log('UserModel 정의함.');
+        UserModel = mongoose.model("users2",UserSchema);
 
         database.on('disconnected',function(){
                 console.log('DB연결이 중단.....5초후 재연결');
@@ -63,7 +85,7 @@ function connectDB(){
 
 let authUser = function(database, id,password,callback){
     console.log('몽구스...authUser');
-    userModel.findById(id,function (err,results){
+    UserModel.findById(id,function (err,results){
         if(err){
             callback(err,null);
             return;
@@ -73,7 +95,14 @@ let authUser = function(database, id,password,callback){
 
         if(results.length>0){
             console.log('일치하는 사용자 찾음!');
-            callback(err,results);
+            
+            if(results[0]._doc.password === password){
+                console.log('비밀번호 일치함');
+                callback(null,results);
+            }else{
+                console.log('비밀번호 일치하지 않음!!');
+                callback(null,null);
+            }
         }else{
             console.log('일치하는 사용자 없음');
             callback(err,null);
@@ -84,7 +113,7 @@ let authUser = function(database, id,password,callback){
 
 let addUser = function(database, id, password,name, callback){
     console.log('몽구스...addUser');
-    let user = new userModel({"id":id,"password": password,"name": name});
+    let user = new UserModel({"id":id,"password": password,"name": name});
 
     user.save(function(err){
         if(err){
@@ -96,20 +125,15 @@ let addUser = function(database, id, password,name, callback){
     });
 };
 
-//인덱스
-// userSchema = mongoose.Schema({
-//     id : {type: String, required :true, unique : true},
-//     name : {type: String, index : 'hashed'},
-//     password : {type: String, unique : true}
-// });
+
 
 var router = express.Router();
 
-router.route('action/listuser').post(function(req,res){
+router.route('/action/listuser').post(function(req,res){
     console.log('listuser 호출');
     
     if(database){
-        userModel.findAll(function(err,results){
+        UserModel.findAll(function(err,results){
             if(err){
                 console.log('조회중 오류발생..');
 
@@ -126,8 +150,10 @@ router.route('action/listuser').post(function(req,res){
                 res.write('<div><ul>');
 
                 for(let i=0;i<results.length;i++){
-                    let curId = results[i]._doc_id;
-                    let curName = results[i]._dov_name;
+                    let curId = results[i]._doc.id;
+                    let curName = results[i]._doc.name;
+                    console.log('id : '+curId);
+                    console.log('name : '+curName);
                     res.write('    <li>#'+i+' : '+ curId+', '+curName+'</li>');
                 }
                 res.write('</ul></div>');
@@ -142,3 +168,9 @@ router.route('action/listuser').post(function(req,res){
     }
 });
 
+app.use('/',router);
+
+http.createServer(app).listen(app.get('port'),function(){
+    console.log('express 서버 실행중.............',app.get('port'));
+    connectDB();
+});
