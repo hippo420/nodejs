@@ -5,7 +5,7 @@ module.exports = {
     db_url :'mongodb://localhost:27017/local',
     db_schema: [{
         file:'../database/user_schema',
-        collection:'users',
+        collection:'users1',
         schemaName:'UserSchema',
         modelName:'UserModel'
     }],

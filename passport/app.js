@@ -141,7 +141,8 @@ passport.use('local-login', new LocalStrategy({
             console.log('등록된  계정없음!!');
             return done(null,false,req.flash('loginMessage','등록된 계정이 없습니다.'));
         }
-
+    let authenticated = user.authenticate(password, user._doc.salt,
+            user._doc.hashed_password);
         if(!authenticated){
             console.log('비밀번호가 일치하지 않음!!');
             return done(null,false,req.flash('loginMessage','비밀번호가 일치하지 않습니다.'));
